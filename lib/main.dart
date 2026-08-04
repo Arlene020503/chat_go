@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // pour kReleaseMode
 import 'package:device_preview/device_preview.dart';
-import 'ecrans/ecran_presentation.dart';
 import 'services/service_theme.dart';
 import 'services/service_langue.dart';
+import 'ecrans/ecran_splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
             cardColor: const Color(0xFF1E1E1E),
           ),
 
-          home: const EcranPresentation(),
+          home: const EcranSplash(),
         );
       },
     );
