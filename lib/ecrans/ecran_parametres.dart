@@ -43,17 +43,23 @@ class EcranParametres extends StatelessWidget {
             children: [
               _buildOption(
                 context: context,
-                icon: Icons.person_outline,
+                icon: Icons.history,
                 titre: ServiceLangue.texte("parametres_historique"),
                 trailing: Icon(
                   Icons.chevron_right,
                   color: estSombre ? Colors.white38 : Colors.black38,
                 ),
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  final recherche = await Navigator.push<String>(
                     context,
-                    MaterialPageRoute(builder: (context) => const EcranHistorique()),
+                    MaterialPageRoute(
+                      builder: (context) => const EcranHistorique(),
+                    ),
                   );
+                  // Recherche choisie dans l'historique : on la renvoie au chat
+                  if (recherche != null && context.mounted) {
+                    Navigator.pop(context, recherche);
+                  }
                 },
               ),
 
@@ -97,8 +103,8 @@ class EcranParametres extends StatelessWidget {
                 ),
                 onTap: () => _afficherChoixLangue(context, langueActuelle),
               ),
-              // --- FIN BLOC LANGUE ---
 
+              // --- FIN BLOC LANGUE ---
               _buildOption(
                 context: context,
                 icon: Icons.ios_share,
@@ -117,9 +123,9 @@ class EcranParametres extends StatelessWidget {
                   final Uri url = Uri.parse(
                     "https://play.google.com/store/apps/details?id=com.tonpackage.chatgoapp",
                   );
-                  if (await canLaunchUrl(url)) {
+                  try {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
-                  }
+                  } catch (_) {}
                 },
               ),
               _buildOption(
@@ -150,7 +156,11 @@ class EcranParametres extends StatelessWidget {
     final estSombre = Theme.of(context).brightness == Brightness.dark;
 
     return ListTile(
-      leading: Icon(icon, color: estSombre ? Colors.white70 : Colors.black87, size: 22),
+      leading: Icon(
+        icon,
+        color: estSombre ? Colors.white70 : Colors.black87,
+        size: 22,
+      ),
       title: Text(
         titre,
         style: GoogleFonts.roboto(
@@ -177,9 +187,24 @@ class EcranParametres extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _optionApparence(context, ServiceLangue.texte("apparence_clair"), ThemeMode.light, modeActuel),
-              _optionApparence(context, ServiceLangue.texte("apparence_sombre"), ThemeMode.dark, modeActuel),
-              _optionApparence(context, ServiceLangue.texte("apparence_systeme"), ThemeMode.system, modeActuel),
+              _optionApparence(
+                context,
+                ServiceLangue.texte("apparence_clair"),
+                ThemeMode.light,
+                modeActuel,
+              ),
+              _optionApparence(
+                context,
+                ServiceLangue.texte("apparence_sombre"),
+                ThemeMode.dark,
+                modeActuel,
+              ),
+              _optionApparence(
+                context,
+                ServiceLangue.texte("apparence_systeme"),
+                ThemeMode.system,
+                modeActuel,
+              ),
             ],
           ),
         );
@@ -200,7 +225,9 @@ class EcranParametres extends StatelessWidget {
         label,
         style: TextStyle(color: estSombre ? Colors.white : Colors.black87),
       ),
-      trailing: mode == modeActuel ? const Icon(Icons.check, color: Colors.green) : null,
+      trailing: mode == modeActuel
+          ? const Icon(Icons.check, color: Colors.green)
+          : null,
       onTap: () {
         ServiceTheme.changerTheme(mode);
         Navigator.pop(context);
@@ -237,16 +264,25 @@ class EcranParametres extends StatelessWidget {
     );
   }
 
-  Widget _optionLangue(BuildContext context, String code, String langueActuelle) {
+  Widget _optionLangue(
+    BuildContext context,
+    String code,
+    String langueActuelle,
+  ) {
     final estSombre = Theme.of(context).brightness == Brightness.dark;
 
     return ListTile(
-      leading: Text(ServiceLangue.drapeau(code), style: const TextStyle(fontSize: 22)),
+      leading: Text(
+        ServiceLangue.drapeau(code),
+        style: const TextStyle(fontSize: 22),
+      ),
       title: Text(
         ServiceLangue.nomAffichage(code),
         style: TextStyle(color: estSombre ? Colors.white : Colors.black87),
       ),
-      trailing: code == langueActuelle ? const Icon(Icons.check, color: Colors.green) : null,
+      trailing: code == langueActuelle
+          ? const Icon(Icons.check, color: Colors.green)
+          : null,
       onTap: () {
         ServiceLangue.changerLangue(code);
         Navigator.pop(context);

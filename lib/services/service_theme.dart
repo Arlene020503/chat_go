@@ -1,13 +1,15 @@
 // lib/services/service_theme.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'service_langue.dart';
 
 class ServiceTheme {
   static const String _cle = "mode_apparence";
 
   // Notifie automatiquement MaterialApp dès que la valeur change
-  static final ValueNotifier<ThemeMode> themeNotifier =
-      ValueNotifier(ThemeMode.system);
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(
+    ThemeMode.system,
+  );
 
   /// À appeler au tout début de l'app (dans main()) pour charger le choix sauvegardé
   static Future<void> chargerThemeSauvegarde() async {
@@ -49,11 +51,11 @@ class ServiceTheme {
   static String texteAffichage(ThemeMode mode) {
     switch (mode) {
       case ThemeMode.light:
-        return "Clair";
+        return ServiceLangue.texte("apparence_clair");
       case ThemeMode.dark:
-        return "Sombre";
+        return ServiceLangue.texte("apparence_sombre");
       default:
-        return "Système";
+        return ServiceLangue.texte("apparence_systeme");
     }
   }
 }

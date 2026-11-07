@@ -9,7 +9,8 @@ class Prestataire {
   final double note;
   final String prix;
   final String adresse;
-  final bool ouvert;
+  // null = horaires inconnus (ex: résultat trouvé sur Internet)
+  final bool? ouvert;
   final String? imageUrl;
 
   Prestataire({
@@ -27,18 +28,35 @@ class Prestataire {
   });
 
   factory Prestataire.fromJson(Map<String, dynamic> json) {
+    final ouvert = json['ouvert']?.toString().toLowerCase();
     return Prestataire(
-      id: int.parse(json['id'].toString()),
-      nom: json['nom'] ?? '',
-      categorie: json['categorie'] ?? '',
-      description: json['description'] ?? '',
-      telephone: json['telephone'] ?? '',
-      whatsapp: json['whatsapp'] ?? '',
+      id: int.tryParse(json['id'].toString()) ?? 0,
+      nom: json['nom']?.toString() ?? '',
+      categorie: json['categorie']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      telephone: json['telephone']?.toString() ?? '',
+      whatsapp: json['whatsapp']?.toString() ?? '',
       note: double.tryParse(json['note'].toString()) ?? 0.0,
-      prix: json['prix'] ?? '',
-      adresse: json['adresse'] ?? '',
-      ouvert: json['ouvert'].toString() == '1',
-      imageUrl: json['image_url'],
+      prix: json['prix']?.toString() ?? '',
+      adresse: json['adresse']?.toString() ?? '',
+      ouvert: ouvert == '1' || ouvert == 'true'
+          ? true
+          : (ouvert == '0' || ouvert == 'false' ? false : null),
+      imageUrl: json['image_url']?.toString(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'nom': nom,
+    'categorie': categorie,
+    'description': description,
+    'telephone': telephone,
+    'whatsapp': whatsapp,
+    'note': note,
+    'prix': prix,
+    'adresse': adresse,
+    'ouvert': ouvert == null ? null : (ouvert! ? 1 : 0),
+    'image_url': imageUrl,
+  };
 }

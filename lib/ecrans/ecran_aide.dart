@@ -20,8 +20,10 @@ class EcranAide extends StatelessWidget {
       path: 'audreyassoua22@gmail.com',
       query: 'subject=Besoin d\'aide - Chat&Go',
     );
-    if (await canLaunchUrl(email)) {
+    try {
       await launchUrl(email);
+    } catch (_) {
+      // Aucune application e-mail installée : rien à faire
     }
   }
 
@@ -57,7 +59,10 @@ class EcranAide extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: _faq.length,
                   itemBuilder: (context, index) {
                     final item = _faq[index];
@@ -71,8 +76,14 @@ class EcranAide extends StatelessWidget {
                         ),
                       ),
                       iconColor: estSombre ? Colors.white70 : Colors.black87,
-                      collapsedIconColor: estSombre ? Colors.white54 : Colors.black54,
-                      childrenPadding: const EdgeInsets.only(bottom: 12, left: 4, right: 4),
+                      collapsedIconColor: estSombre
+                          ? Colors.white54
+                          : Colors.black54,
+                      childrenPadding: const EdgeInsets.only(
+                        bottom: 12,
+                        left: 4,
+                        right: 4,
+                      ),
                       children: [
                         Text(
                           ServiceLangue.texte(item["reponse"]!),
@@ -96,12 +107,17 @@ class EcranAide extends StatelessWidget {
                     icon: const Icon(Icons.mail_outline, color: Colors.white),
                     label: Text(
                       ServiceLangue.texte("aide_contacter_support"),
-                      style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 33, 205, 39),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),

@@ -1,6 +1,9 @@
 // lib/ecrans/ecran_splash.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/service_langue.dart';
+import 'ecran_chat.dart';
 import 'ecran_presentation.dart';
 
 class EcranSplash extends StatefulWidget {
@@ -17,16 +20,24 @@ class _EcranSplashState extends State<EcranSplash> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    // 2,5 secondes de chargement (25 × 100 ms)
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) async {
       setState(() {
-        _progress = (timer.tick * 0.01).clamp(0, 1);
+        _progress = (timer.tick / 25).clamp(0, 1);
       });
-      if (timer.tick >= 100) {
+      if (timer.tick >= 25) {
         timer.cancel();
+        // La présentation n'est montrée qu'au premier lancement
+        final prefs = await SharedPreferences.getInstance();
+        final dejaVue =
+            prefs.getBool(EcranPresentation.clePresentationVue) ?? false;
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const EcranPresentation()),
+            MaterialPageRoute(
+              builder: (context) =>
+                  dejaVue ? const EcranChat() : const EcranPresentation(),
+            ),
           );
         }
       }
@@ -51,7 +62,8 @@ class _EcranSplashState extends State<EcranSplash> {
             children: [
               Image.asset(
                 'assets/splash.png', // ton logo complet, avec texte
-                fit: BoxFit.contain, // garde les proportions, jamais étiré/compressé
+                fit: BoxFit
+                    .contain, // garde les proportions, jamais étiré/compressé
               ),
               const SizedBox(height: 32),
               LinearProgressIndicator(
@@ -62,10 +74,10 @@ class _EcranSplashState extends State<EcranSplash> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Chargement en cours...',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey.shade700,
-                    ),
+                ServiceLangue.texte("splash_chargement"),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade700),
               ),
             ],
           ),

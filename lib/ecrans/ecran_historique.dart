@@ -23,6 +23,7 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
 
   Future<void> _charger() async {
     final data = await ServiceHistorique.obtenirHistorique();
+    if (!mounted) return;
     setState(() {
       _historique = data;
       _chargement = false;
@@ -30,13 +31,31 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
   }
 
   Future<void> _effacerTout() async {
+    final confirme = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(ServiceLangue.texte("historique_effacer_question")),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(ServiceLangue.texte("annuler")),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(ServiceLangue.texte("historique_effacer")),
+          ),
+        ],
+      ),
+    );
+    if (confirme != true) return;
     await ServiceHistorique.effacerHistorique();
     await _charger();
   }
 
   String _formaterDate(String isoDate) {
-    final date = DateTime.parse(isoDate);
-    return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')} à ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+    final date = DateTime.tryParse(isoDate);
+    if (date == null) return "";
+    return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 
   @override
@@ -80,44 +99,51 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
           body: _chargement
               ? const Center(child: CircularProgressIndicator())
               : _historique.isEmpty
-                  ? Center(
-                      child: Text(
-                        ServiceLangue.texte("historique_vide"),
+              ? Center(
+                  child: Text(
+                    ServiceLangue.texte("historique_vide"),
+                    style: GoogleFonts.roboto(
+                      color: estSombre ? Colors.white54 : Colors.black45,
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: _historique.length,
+                  separatorBuilder: (_, _) => Divider(
+                    color: estSombre ? Colors.grey[800] : Colors.grey[200],
+                    height: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = _historique[index];
+                    return ListTile(
+                      onTap: () =>
+                          Navigator.pop(context, item["texte"]?.toString()),
+                      trailing: Icon(
+                        Icons.north_west,
+                        size: 18,
+                        color: estSombre ? Colors.white38 : Colors.black38,
+                      ),
+                      leading: Icon(
+                        Icons.history,
+                        color: estSombre ? Colors.white54 : Colors.black45,
+                      ),
+                      title: Text(
+                        item["texte"]?.toString() ?? "",
                         style: GoogleFonts.roboto(
-                          color: estSombre ? Colors.white54 : Colors.black45,
+                          fontSize: 14,
+                          color: estSombre ? Colors.white70 : Colors.black87,
                         ),
                       ),
-                    )
-                  : ListView.separated(
-                      itemCount: _historique.length,
-                      separatorBuilder: (_, __) => Divider(
-                        color: estSombre ? Colors.grey[800] : Colors.grey[200],
-                        height: 1,
+                      subtitle: Text(
+                        _formaterDate(item["date"]?.toString() ?? ""),
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          color: estSombre ? Colors.white38 : Colors.black38,
+                        ),
                       ),
-                      itemBuilder: (context, index) {
-                        final item = _historique[index];
-                        return ListTile(
-                          leading: Icon(
-                            Icons.history,
-                            color: estSombre ? Colors.white54 : Colors.black45,
-                          ),
-                          title: Text(
-                            item["texte"],
-                            style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: estSombre ? Colors.white70 : Colors.black87,
-                            ),
-                          ),
-                          subtitle: Text(
-                            _formaterDate(item["date"]),
-                            style: GoogleFonts.roboto(
-                              fontSize: 12,
-                              color: estSombre ? Colors.white38 : Colors.black38,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    );
+                  },
+                ),
         );
       },
     );

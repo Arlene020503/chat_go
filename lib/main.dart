@@ -11,10 +11,7 @@ void main() async {
   await ServiceLangue.chargerLangueSauvegardee();
 
   runApp(
-    DevicePreview(
-      enabled: !kReleaseMode,
-      builder: (context) => const MyApp(),
-    ),
+    DevicePreview(enabled: !kReleaseMode, builder: (context) => const MyApp()),
   );
 }
 

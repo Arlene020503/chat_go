@@ -11,10 +11,7 @@ class ServiceHistorique {
     final liste = await obtenirHistorique();
 
     // Ajoute la nouvelle recherche en tête de liste, avec la date/heure
-    liste.insert(0, {
-      "texte": texte,
-      "date": DateTime.now().toIso8601String(),
-    });
+    liste.insert(0, {"texte": texte, "date": DateTime.now().toIso8601String()});
 
     // Limite à 50 recherches max, pour ne pas surcharger le stockage
     final listeLimitee = liste.take(50).toList();
@@ -28,8 +25,12 @@ class ServiceHistorique {
     final contenu = prefs.getString(_cle);
     if (contenu == null) return [];
 
-    final liste = jsonDecode(contenu) as List;
-    return liste.map((e) => Map<String, dynamic>.from(e)).toList();
+    try {
+      final liste = jsonDecode(contenu) as List;
+      return liste.map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   /// Vide complètement l'historique

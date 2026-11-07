@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/service_langue.dart';
 import '../widgets/contenu_page_intro.dart';
 import 'ecran_connexion.dart';
 
 class EcranPresentation extends StatefulWidget {
   const EcranPresentation({super.key});
+
+  static const String clePresentationVue = "presentation_vue";
 
   @override
   State<EcranPresentation> createState() => _EcranPresentationState();
@@ -13,6 +17,22 @@ class EcranPresentation extends StatefulWidget {
 class _EcranPresentationState extends State<EcranPresentation> {
   final PageController _pageController = PageController();
   int _pageActuelle = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _terminer() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(EcranPresentation.clePresentationVue, true);
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const EcranConnexion()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +44,9 @@ class _EcranPresentationState extends State<EcranPresentation> {
         actions: [
           if (_pageActuelle != 1)
             TextButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EcranConnexion()),
-                );
-              },
+              onPressed: _terminer,
               child: Text(
-                "Passer",
+                ServiceLangue.texte("intro_passer"),
                 style: GoogleFonts.roboto(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -52,17 +67,17 @@ class _EcranPresentationState extends State<EcranPresentation> {
                 _pageActuelle = page;
               });
             },
-            children: const [
+            children: [
               ContenuPageIntro(
                 couleur: Colors.white,
-                titre: "Trouvez rapidement le bon prestataire",
-                description: "Découvrez votre besoin et notre IA s'occupe du reste.",
+                titre: ServiceLangue.texte("intro_titre_1"),
+                description: ServiceLangue.texte("intro_description_1"),
                 cheminImage: "assets/img1.jpeg",
               ),
               ContenuPageIntro(
                 couleur: Colors.white,
-                titre: "Contactez en 1 clic",
-                description: "Appelez directement ou discutez sur WhatsApp avec le prestataire sélectionné.",
+                titre: ServiceLangue.texte("intro_titre_2"),
+                description: ServiceLangue.texte("intro_description_2"),
                 cheminImage: "assets/img2.jpg",
               ),
             ],
@@ -76,7 +91,10 @@ class _EcranPresentationState extends State<EcranPresentation> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(2, (index) => _construirePoint(index)),
+                  children: List.generate(
+                    2,
+                    (index) => _construirePoint(index),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -89,10 +107,7 @@ class _EcranPresentationState extends State<EcranPresentation> {
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const EcranConnexion()),
-                        );
+                        _terminer();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -105,7 +120,11 @@ class _EcranPresentationState extends State<EcranPresentation> {
                       elevation: 0,
                     ),
                     child: Text(
-                      _pageActuelle == 1 ? "Commencer" : "Suivant",
+                      ServiceLangue.texte(
+                        _pageActuelle == 1
+                            ? "intro_commencer"
+                            : "intro_suivant",
+                      ),
                       style: GoogleFonts.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
