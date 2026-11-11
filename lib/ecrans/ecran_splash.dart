@@ -54,34 +54,43 @@ class _EcranSplashState extends State<EcranSplash> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 48),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/splash.png', // ton logo complet, avec texte
-                fit: BoxFit
-                    .contain, // garde les proportions, jamais étiré/compressé
-              ),
-              const SizedBox(height: 32),
-              LinearProgressIndicator(
-                value: _progress,
-                minHeight: 6,
-                backgroundColor: Colors.grey.shade300,
-                color: const Color(0xFF00A859),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                ServiceLangue.texte("splash_chargement"),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade700),
-              ),
-            ],
+      body: Stack(
+        children: [
+          // Même logo, même taille et même position que l'écran de lancement
+          // natif : la transition entre les deux est invisible
+          Center(
+            child: Image.asset(
+              'assets/splash.png',
+              width: 250,
+              fit: BoxFit.contain,
+            ),
           ),
-        ),
+          Align(
+            alignment: const Alignment(0, 0.45),
+            child: SizedBox(
+              width: 180,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: _progress,
+                      minHeight: 5,
+                      backgroundColor: Colors.grey.shade200,
+                      color: const Color(0xFF00A859),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    ServiceLangue.texte("splash_chargement"),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

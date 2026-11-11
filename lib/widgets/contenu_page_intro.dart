@@ -17,38 +17,50 @@ class ContenuPageIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // L'image s'adapte à la hauteur de l'écran (petits téléphones compris)
+    final hauteurImage = MediaQuery.of(context).size.height * 0.34;
     return Container(
       color: couleur,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (cheminImage != null)
-            Image.asset(cheminImage!, height: 220, fit: BoxFit.contain)
-          else
-            const Icon(Icons.rocket_launch, size: 100, color: Colors.green),
-          const SizedBox(height: 40),
-          Text(
-            titre,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      child: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (cheminImage != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  cheminImage!,
+                  height: hauteurImage,
+                  fit: BoxFit.contain,
+                ),
+              )
+            else
+              const Icon(Icons.rocket_launch, size: 100, color: Colors.green),
+            const SizedBox(height: 36),
+            Text(
+              titre,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.roboto(
+                fontSize: 26,
+                height: 1.25,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF111827),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(
-              fontSize: 15,
-              color: Colors.black54,
-              height: 1.5,
+            const SizedBox(height: 14),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.roboto(
+                fontSize: 15.5,
+                color: Colors.black54,
+                height: 1.55,
+              ),
             ),
-          ),
-          const SizedBox(height: 80),
-        ],
+            const SizedBox(height: 120),
+          ],
+        ),
       ),
     );
   }

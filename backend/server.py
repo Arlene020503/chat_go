@@ -1,4 +1,4 @@
-"""Backend optionnel de Chat&Go.
+"""Backend optionnel de Mes Prestataires.
 
 L'application fonctionne sans lui. S'il est lancé, démarrer l'app avec :
     flutter run --dart-define=API_URL=http://<ip-de-la-machine>:5000

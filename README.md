@@ -1,24 +1,36 @@
-# Chat Go App
+# Mes Prestataires
 
-Application Flutter de recherche de prestataires locaux à partir d'une conversation.
-L'utilisateur peut demander un plombier, un massage, un restaurant ou un service
-similaire, puis consulter les résultats et leurs informations de contact.
+Application Flutter qui trouve de **vrais** prestataires et boutiques en Côte d'Ivoire
+à partir d'une conversation, avec leurs numéros et WhatsApp quand ils existent.
 
 ## Fonctionnalités
 
-- écran d'accueil et parcours de présentation ;
-- recherche conversationnelle de prestataires ;
-- catégories reconnues dans les 5 langues : plomberie, massage, restaurant, coiffure,
-  électricité, mécanique, pharmacie et hôtel (ainsi que toute recherche libre) ;
-- précision de la ville dans le message (ex. « plombier à Cocody ») ; Abidjan par défaut ;
-- recherche complémentaire sur OpenStreetMap/Nominatim lorsque les données locales
-  ne suffisent pas ;
-- sauvegarde locale des résultats trouvés pour les recherches suivantes ;
-- consultation de l'historique ;
-- actions Appeler, WhatsApp et Itinéraire selon les informations du prestataire ;
-- thèmes clair, sombre ou système ;
-- interface disponible en français, anglais, allemand, espagnol et chinois ;
-- écran d'aide et paramètres.
+- conversation naturelle : salutations, « qui es-tu ? », remerciements, mémoire du
+  sujet (« et à Yopougon ? »), « plus de résultats » ;
+- 26 catégories reconnues dans 5 langues, services (plombier, pharmacie, coiffure,
+  garage, banque…) et produits (chaussures, téléphones, vêtements, meubles…) ;
+- quartier ou ville détectés dans la phrase (Cocody, Yopougon, Bouaké…), Abidjan par défaut ;
+- sources réelles uniquement :
+  - OpenStreetMap (Overpass et Nominatim) pour les établissements, numéros, sites web,
+    horaires et position ;
+  - Jumia Côte d'Ivoire et CoinAfrique pour les achats en ligne ;
+  - Wikipédia pour les questions générales (« c'est quoi l'attiéké ? ») ;
+- numéros ivoiriens normalisés (10 chiffres) et lien WhatsApp pour les mobiles ;
+- résultats sauvegardés sur le téléphone : la recherche suivante est instantanée ;
+- fiches avec Appeler, WhatsApp, Itinéraire, Site web et Partager ;
+- historique (relance en un geste, suppression par glissement) ;
+- thèmes clair, sombre ou système ; interface en français, anglais, allemand,
+  espagnol et chinois.
+
+## Logo et icônes
+
+Le logo, l'icône de l'application (Android adaptative, iOS, web, Windows) et
+l'illustration de présentation sont générés par des scripts Python (Pillow) :
+
+```powershell
+python tool/generer_logo.py
+dart run flutter_native_splash:create
+```
 
 ## Prérequis
 

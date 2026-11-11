@@ -12,6 +12,13 @@ class Prestataire {
   // null = horaires inconnus (ex: résultat trouvé sur Internet)
   final bool? ouvert;
   final String? imageUrl;
+  final String siteWeb;
+  final String horaires;
+  final double? latitude;
+  final double? longitude;
+  // Zone de recherche (ville/quartier) où ce résultat a été trouvé : sert
+  // uniquement à le retrouver ensuite, jamais affiché comme adresse
+  final String zone;
 
   Prestataire({
     required this.id,
@@ -25,6 +32,11 @@ class Prestataire {
     required this.adresse,
     required this.ouvert,
     this.imageUrl,
+    this.siteWeb = '',
+    this.horaires = '',
+    this.latitude,
+    this.longitude,
+    this.zone = '',
   });
 
   factory Prestataire.fromJson(Map<String, dynamic> json) {
@@ -43,6 +55,11 @@ class Prestataire {
           ? true
           : (ouvert == '0' || ouvert == 'false' ? false : null),
       imageUrl: json['image_url']?.toString(),
+      siteWeb: json['site_web']?.toString() ?? '',
+      horaires: json['horaires']?.toString() ?? '',
+      latitude: double.tryParse('${json['latitude']}'),
+      longitude: double.tryParse('${json['longitude']}'),
+      zone: json['zone']?.toString() ?? '',
     );
   }
 
@@ -58,5 +75,27 @@ class Prestataire {
     'adresse': adresse,
     'ouvert': ouvert == null ? null : (ouvert! ? 1 : 0),
     'image_url': imageUrl,
+    'site_web': siteWeb,
+    'horaires': horaires,
+    'latitude': latitude,
+    'longitude': longitude,
+    'zone': zone,
   };
+
+  bool get aUnContact => telephone.isNotEmpty || whatsapp.isNotEmpty;
+}
+
+/// Lien vers une source externe réelle (boutique en ligne, article…)
+class LienExterne {
+  final String titre;
+  final String sousTitre;
+  final String url;
+  final String type; // "boutique", "article", "carte"
+
+  const LienExterne({
+    required this.titre,
+    required this.sousTitre,
+    required this.url,
+    this.type = "boutique",
+  });
 }

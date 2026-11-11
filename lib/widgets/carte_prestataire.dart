@@ -1,13 +1,57 @@
 // lib/widgets/carte_prestataire.dart
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../modeles/prestataire.dart';
 import '../services/service_langue.dart';
+import '../theme/theme_app.dart';
 
 class CartePrestataire extends StatelessWidget {
   final Prestataire prestataire;
+  // Version compacte (largeur et hauteur fixes) pour le carrousel du chat
+  final bool compacte;
 
-  const CartePrestataire({super.key, required this.prestataire});
+  static const double hauteurCompacte = 292;
+
+  const CartePrestataire({
+    super.key,
+    required this.prestataire,
+    this.compacte = false,
+  });
+
+  static const Map<String, IconData> _icones = {
+    "Plomberie": Icons.plumbing,
+    "Massage": Icons.spa_outlined,
+    "Beauté": Icons.face_retouching_natural,
+    "Restaurant": Icons.restaurant_outlined,
+    "Coiffure": Icons.content_cut,
+    "Électricité": Icons.electrical_services,
+    "Mécanique": Icons.car_repair,
+    "Pharmacie": Icons.local_pharmacy_outlined,
+    "Santé": Icons.local_hospital_outlined,
+    "Couture": Icons.checkroom,
+    "Hôtel": Icons.hotel_outlined,
+    "Sport": Icons.fitness_center,
+    "Banque": Icons.account_balance_outlined,
+    "Boulangerie": Icons.bakery_dining_outlined,
+    "Pressing": Icons.local_laundry_service_outlined,
+    "Station-service": Icons.local_gas_station_outlined,
+    "Chaussures": Icons.shopping_bag_outlined,
+    "Vêtements": Icons.checkroom,
+    "Téléphones": Icons.smartphone,
+    "Électronique": Icons.devices_other,
+    "Supermarché": Icons.local_grocery_store_outlined,
+    "Meubles": Icons.chair_outlined,
+    "Bijoux": Icons.diamond_outlined,
+    "Parfums": Icons.water_drop_outlined,
+    "Livres": Icons.menu_book_outlined,
+    "Quincaillerie": Icons.handyman_outlined,
+  };
+
+  String get _categorieAffichee {
+    final traduite = ServiceLangue.texte("cat_${prestataire.categorie}");
+    return traduite.startsWith("cat_") ? prestataire.categorie : traduite;
+  }
 
   Future<void> _ouvrir(BuildContext context, Uri uri) async {
     final messager = ScaffoldMessenger.of(context);
@@ -32,202 +76,280 @@ class CartePrestataire extends StatelessWidget {
   void _ouvrirWhatsapp(BuildContext context) =>
       _ouvrir(context, Uri.parse("https://wa.me/${prestataire.whatsapp}"));
 
-  void _ouvrirItineraire(BuildContext context) => _ouvrir(
-    context,
-    Uri.https('www.google.com', '/maps/search/', {
-      'api': '1',
-      'query': "${prestataire.nom}, ${prestataire.adresse}",
-    }),
-  );
+  void _ouvrirItineraire(BuildContext context) {
+    final aPosition =
+        prestataire.latitude != null && prestataire.longitude != null;
+    _ouvrir(
+      context,
+      aPosition
+          ? Uri.https('www.google.com', '/maps/dir/', {
+              'api': '1',
+              'destination': "${prestataire.latitude},${prestataire.longitude}",
+            })
+          : Uri.https('www.google.com', '/maps/search/', {
+              'api': '1',
+              'query': "${prestataire.nom}, ${prestataire.adresse}",
+            }),
+    );
+  }
+
+  void _partager() {
+    Share.share(
+      ServiceLangue.texteAvec("carte_partage_texte", {
+        "nom": prestataire.nom,
+        "adresse": prestataire.adresse,
+        "telephone": prestataire.telephone,
+      }).replaceAll("\n\n", "\n"),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final estSombre = Theme.of(context).brightness == Brightness.dark;
+    final secondaire = ThemeApp.texteSecondaire(context);
     final aTelephone = prestataire.telephone.trim().isNotEmpty;
     final aWhatsapp = prestataire.whatsapp.trim().isNotEmpty;
+    final aSite = prestataire.siteWeb.trim().isNotEmpty;
 
-    final details = [
-      if (prestataire.note > 0) "${prestataire.note}",
-      if (prestataire.prix.isNotEmpty) prestataire.prix,
-      if (prestataire.categorie.isNotEmpty) prestataire.categorie,
-    ].join("  •  ");
+    final contenu = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // --- En-tête : icône de catégorie, nom, catégorie ---
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: ThemeApp.vert.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _icones[prestataire.categorie] ?? Icons.storefront_outlined,
+                color: ThemeApp.vert,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    prestataire.nom,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15.5,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _categorieAffichee,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: ThemeApp.vert,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (prestataire.note > 0) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.star, size: 14, color: Colors.amber),
+                        Text(
+                          " ${prestataire.note}",
+                          style: const TextStyle(fontSize: 12.5),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // --- Informations ---
+        _Ligne(
+          icone: Icons.place_outlined,
+          texte: prestataire.adresse.isNotEmpty
+              ? prestataire.adresse
+              : ServiceLangue.texte("carte_adresse_inconnue"),
+          attenue: prestataire.adresse.isEmpty,
+          lignes: 2,
+        ),
+        _Ligne(
+          icone: aWhatsapp ? Icons.chat_outlined : Icons.phone_outlined,
+          texte: aTelephone
+              ? prestataire.telephone
+              : (aWhatsapp
+                    ? "+${prestataire.whatsapp}"
+                    : ServiceLangue.texte("carte_pas_de_numero")),
+          gras: aTelephone || aWhatsapp,
+          attenue: !aTelephone && !aWhatsapp,
+          selectionnable: aTelephone || aWhatsapp,
+        ),
+        if (prestataire.horaires.isNotEmpty)
+          _Ligne(icone: Icons.schedule, texte: prestataire.horaires),
+        if (compacte) const Spacer() else const SizedBox(height: 12),
+        // --- Actions principales ---
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: aTelephone ? () => _appeler(context) : null,
+                icon: const Icon(Icons.call_outlined, size: 18),
+                label: Text(ServiceLangue.texte("carte_appeler")),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  minimumSize: const Size(0, 40),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: aWhatsapp ? () => _ouvrirWhatsapp(context) : null,
+                icon: const Icon(Icons.chat_bubble_outline, size: 17),
+                label: const Text("WhatsApp"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  minimumSize: const Size(0, 40),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        // --- Actions secondaires ---
+        Row(
+          children: [
+            Flexible(
+              child: _ActionDiscrete(
+                icone: Icons.directions_outlined,
+                libelle: ServiceLangue.texte("carte_itineraire"),
+                onTap: () => _ouvrirItineraire(context),
+              ),
+            ),
+            const Spacer(),
+            if (aSite)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: ServiceLangue.texte("carte_site"),
+                onPressed: () =>
+                    _ouvrir(context, Uri.parse(prestataire.siteWeb)),
+                icon: const Icon(
+                  Icons.language,
+                  size: 19,
+                  color: ThemeApp.vert,
+                ),
+              ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: ServiceLangue.texte("carte_partager"),
+              onPressed: _partager,
+              icon: Icon(Icons.share_outlined, size: 19, color: secondaire),
+            ),
+          ],
+        ),
+      ],
+    );
 
-    return Container(
-      width: 280,
-      margin: const EdgeInsets.only(top: 8, bottom: 4),
-      decoration: BoxDecoration(
-        color: estSombre ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: estSombre
-                ? const Color.fromRGBO(0, 0, 0, 0.4)
-                : const Color.fromRGBO(0, 0, 0, 0.08),
-            blurRadius: 8,
+    return SizedBox(
+      width: compacte ? 290 : double.infinity,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 14, 10, 6),
+          child: contenu,
+        ),
+      ),
+    );
+  }
+}
+
+class _Ligne extends StatelessWidget {
+  final IconData icone;
+  final String texte;
+  final int lignes;
+  final bool gras;
+  final bool attenue;
+  final bool selectionnable;
+
+  const _Ligne({
+    required this.icone,
+    required this.texte,
+    this.lignes = 1,
+    this.gras = false,
+    this.attenue = false,
+    this.selectionnable = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final secondaire = ThemeApp.texteSecondaire(context);
+    final style = TextStyle(
+      fontSize: 13,
+      height: 1.35,
+      fontWeight: gras ? FontWeight.w600 : FontWeight.w400,
+      color: attenue ? secondaire : null,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, right: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Icon(icone, size: 16, color: secondaire),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: selectionnable
+                ? SelectableText(texte, maxLines: lignes, style: style)
+                : Text(
+                    texte,
+                    maxLines: lignes,
+                    overflow: TextOverflow.ellipsis,
+                    style: style,
+                  ),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (prestataire.imageUrl != null && prestataire.imageUrl!.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: Image.network(
-                prestataire.imageUrl!,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  prestataire.nom,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: estSombre ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  prestataire.adresse,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: estSombre ? Colors.white54 : Colors.black54,
-                    fontSize: 13,
-                  ),
-                ),
-                if (aTelephone || aWhatsapp) ...[
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(
-                        aWhatsapp ? Icons.chat_outlined : Icons.phone_outlined,
-                        size: 15,
-                        color: const Color(0xFF00A859),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: SelectableText(
-                          aTelephone
-                              ? prestataire.telephone
-                              : "+${prestataire.whatsapp}",
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: estSombre ? Colors.white : Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                if (details.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      if (prestataire.note > 0)
-                        const Icon(Icons.star, size: 16, color: Colors.amber),
-                      Expanded(
-                        child: Text(
-                          " $details",
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: estSombre ? Colors.white70 : Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                const SizedBox(height: 4),
-                Text(
-                  prestataire.ouvert == null
-                      ? ServiceLangue.texte("carte_horaires_inconnus")
-                      : ServiceLangue.texte(
-                          prestataire.ouvert! ? "carte_ouvert" : "carte_ferme",
-                        ),
-                  style: TextStyle(
-                    color: prestataire.ouvert == null
-                        ? (estSombre ? Colors.white38 : Colors.black45)
-                        : prestataire.ouvert!
-                        ? (estSombre ? Colors.greenAccent[400] : Colors.green)
-                        : (estSombre ? Colors.redAccent[100] : Colors.red),
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: aTelephone ? () => _appeler(context) : null,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          side: BorderSide(
-                            color: estSombre
-                                ? Colors.grey[600]!
-                                : Colors.grey[400]!,
-                          ),
-                        ),
-                        child: Text(
-                          ServiceLangue.texte("carte_appeler"),
-                          style: TextStyle(
-                            color: aTelephone
-                                ? (estSombre ? Colors.white : Colors.black87)
-                                : (estSombre ? Colors.white24 : Colors.black26),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: aWhatsapp
-                            ? () => _ouvrirWhatsapp(context)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00A859),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                        ),
-                        child: const Text(
-                          "WhatsApp",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      tooltip: ServiceLangue.texte("carte_itineraire"),
-                      onPressed: () => _ouvrirItineraire(context),
-                      icon: Icon(
-                        Icons.directions_outlined,
-                        color: estSombre
-                            ? Colors.white70
-                            : const Color(0xFF00A859),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+    );
+  }
+}
+
+class _ActionDiscrete extends StatelessWidget {
+  final IconData icone;
+  final String libelle;
+  final VoidCallback onTap;
+
+  const _ActionDiscrete({
+    required this.icone,
+    required this.libelle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icone, size: 18),
+      label: Text(
+        libelle,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontSize: 13),
+      ),
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
       ),
     );
   }

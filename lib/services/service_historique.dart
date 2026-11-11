@@ -33,6 +33,15 @@ class ServiceHistorique {
     }
   }
 
+  /// Supprime une seule recherche (index dans la liste du plus récent au plus ancien)
+  static Future<void> supprimerRecherche(int index) async {
+    final liste = await obtenirHistorique();
+    if (index < 0 || index >= liste.length) return;
+    liste.removeAt(index);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cle, jsonEncode(liste));
+  }
+
   /// Vide complètement l'historique
   static Future<void> effacerHistorique() async {
     final prefs = await SharedPreferences.getInstance();

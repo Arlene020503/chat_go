@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/service_langue.dart';
+import '../theme/theme_app.dart';
 
 class EcranAide extends StatelessWidget {
   const EcranAide({super.key});
@@ -18,7 +18,7 @@ class EcranAide extends StatelessWidget {
     final Uri email = Uri(
       scheme: 'mailto',
       path: 'audreyassoua22@gmail.com',
-      query: 'subject=Besoin d\'aide - Chat&Go',
+      query: 'subject=Besoin d\'aide - Mes Prestataires',
     );
     try {
       await launchUrl(email);
@@ -32,97 +32,82 @@ class EcranAide extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: ServiceLangue.langueNotifier,
       builder: (context, langueActuelle, _) {
-        final estSombre = Theme.of(context).brightness == Brightness.dark;
+        final secondaire = ThemeApp.texteSecondaire(context);
 
         return Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            centerTitle: true,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: estSombre ? Colors.white : Colors.black87,
-                size: 20,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              ServiceLangue.texte("aide_titre"),
-              style: GoogleFonts.roboto(
-                color: estSombre ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          body: Column(
+          appBar: AppBar(title: Text(ServiceLangue.texte("aide_titre"))),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+                child: Text(
+                  ServiceLangue.texte("aide_sous_titre").toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    letterSpacing: 0.8,
+                    fontWeight: FontWeight.w700,
+                    color: secondaire,
                   ),
-                  itemCount: _faq.length,
-                  itemBuilder: (context, index) {
-                    final item = _faq[index];
-                    return ExpansionTile(
-                      title: Text(
-                        ServiceLangue.texte(item["question"]!),
-                        style: GoogleFonts.roboto(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: estSombre ? Colors.white : Colors.black87,
+                ),
+              ),
+              for (final item in _faq)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: Theme(
+                      // Retire les traits ajoutés par défaut par ExpansionTile
+                      data: Theme.of(
+                        context,
+                      ).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        leading: const Icon(
+                          Icons.help_outline,
+                          color: ThemeApp.vert,
                         ),
-                      ),
-                      iconColor: estSombre ? Colors.white70 : Colors.black87,
-                      collapsedIconColor: estSombre
-                          ? Colors.white54
-                          : Colors.black54,
-                      childrenPadding: const EdgeInsets.only(
-                        bottom: 12,
-                        left: 4,
-                        right: 4,
-                      ),
-                      children: [
-                        Text(
-                          ServiceLangue.texte(item["reponse"]!),
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            color: estSombre ? Colors.white60 : Colors.black54,
-                            height: 1.4,
+                        title: Text(
+                          ServiceLangue.texte(item["question"]!),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _contacterSupport,
-                    icon: const Icon(Icons.mail_outline, color: Colors.white),
-                    label: Text(
-                      ServiceLangue.texte("aide_contacter_support"),
-                      style: GoogleFonts.roboto(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 33, 205, 39),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        iconColor: ThemeApp.vert,
+                        childrenPadding: const EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          16,
+                        ),
+                        children: [
+                          Text(
+                            ServiceLangue.texte(item["reponse"]!),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: secondaire,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
+          ),
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: ElevatedButton.icon(
+                onPressed: _contacterSupport,
+                icon: const Icon(Icons.mail_outline),
+                label: Text(ServiceLangue.texte("aide_contacter_support")),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                ),
+              ),
+            ),
           ),
         );
       },

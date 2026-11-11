@@ -1,8 +1,8 @@
 // lib/ecrans/ecran_historique.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/service_historique.dart';
 import '../services/service_langue.dart';
+import '../theme/theme_app.dart';
 
 class EcranHistorique extends StatefulWidget {
   const EcranHistorique({super.key});
@@ -34,13 +34,17 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
     final confirme = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: Text(ServiceLangue.texte("historique_effacer_question")),
+        icon: const Icon(Icons.delete_outline, color: ThemeApp.vert),
+        content: Text(
+          ServiceLangue.texte("historique_effacer_question"),
+          textAlign: TextAlign.center,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(ServiceLangue.texte("annuler")),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(ServiceLangue.texte("historique_effacer")),
           ),
@@ -52,10 +56,20 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
     await _charger();
   }
 
+  Future<void> _supprimer(int index) async {
+    setState(() => _historique.removeAt(index));
+    await ServiceHistorique.supprimerRecherche(index);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ServiceLangue.texte("historique_supprime"))),
+    );
+  }
+
   String _formaterDate(String isoDate) {
     final date = DateTime.tryParse(isoDate);
     if (date == null) return "";
-    return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+    String deux(int v) => v.toString().padLeft(2, '0');
+    return "${deux(date.day)}/${deux(date.month)}/${date.year} · ${deux(date.hour)}:${deux(date.minute)}";
   }
 
   @override
@@ -63,35 +77,16 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
     return ValueListenableBuilder<String>(
       valueListenable: ServiceLangue.langueNotifier,
       builder: (context, langueActuelle, _) {
-        final estSombre = Theme.of(context).brightness == Brightness.dark;
+        final secondaire = ThemeApp.texteSecondaire(context);
 
         return Scaffold(
           appBar: AppBar(
-            elevation: 0,
-            centerTitle: true,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: estSombre ? Colors.white : Colors.black87,
-                size: 20,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              ServiceLangue.texte("historique_titre"),
-              style: GoogleFonts.roboto(
-                color: estSombre ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
+            title: Text(ServiceLangue.texte("historique_titre")),
             actions: [
               if (_historique.isNotEmpty)
                 IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: estSombre ? Colors.white : Colors.black87,
-                  ),
+                  tooltip: ServiceLangue.texte("historique_effacer"),
+                  icon: const Icon(Icons.delete_sweep_outlined),
                   onPressed: _effacerTout,
                 ),
             ],
@@ -100,49 +95,97 @@ class _EcranHistoriqueState extends State<EcranHistorique> {
               ? const Center(child: CircularProgressIndicator())
               : _historique.isEmpty
               ? Center(
-                  child: Text(
-                    ServiceLangue.texte("historique_vide"),
-                    style: GoogleFonts.roboto(
-                      color: estSombre ? Colors.white54 : Colors.black45,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: ThemeApp.vert.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.history,
+                          size: 34,
+                          color: ThemeApp.vert,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        ServiceLangue.texte("historique_vide"),
+                        style: TextStyle(fontSize: 15, color: secondaire),
+                      ),
+                    ],
                   ),
                 )
-              : ListView.separated(
-                  itemCount: _historique.length,
-                  separatorBuilder: (_, _) => Divider(
-                    color: estSombre ? Colors.grey[800] : Colors.grey[200],
-                    height: 1,
-                  ),
-                  itemBuilder: (context, index) {
-                    final item = _historique[index];
-                    return ListTile(
-                      onTap: () =>
-                          Navigator.pop(context, item["texte"]?.toString()),
-                      trailing: Icon(
-                        Icons.north_west,
-                        size: 18,
-                        color: estSombre ? Colors.white38 : Colors.black38,
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+                      child: Text(
+                        ServiceLangue.texte("historique_aide"),
+                        style: TextStyle(fontSize: 13, color: secondaire),
                       ),
-                      leading: Icon(
-                        Icons.history,
-                        color: estSombre ? Colors.white54 : Colors.black45,
+                    ),
+                    Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < _historique.length; i++) ...[
+                            if (i > 0) const Divider(indent: 56),
+                            Dismissible(
+                              key: ValueKey(
+                                "${_historique[i]["date"]}-${_historique[i]["texte"]}",
+                              ),
+                              direction: DismissDirection.endToStart,
+                              onDismissed: (_) => _supprimer(i),
+                              background: Container(
+                                color: Colors.red.withValues(alpha: 0.85),
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                child: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              child: ListTile(
+                                onTap: () => Navigator.pop(
+                                  context,
+                                  _historique[i]["texte"]?.toString(),
+                                ),
+                                leading: Icon(Icons.search, color: secondaire),
+                                title: Text(
+                                  _historique[i]["texte"]?.toString() ?? "",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  _formaterDate(
+                                    _historique[i]["date"]?.toString() ?? "",
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: secondaire,
+                                  ),
+                                ),
+                                trailing: Icon(
+                                  Icons.north_west,
+                                  size: 18,
+                                  color: secondaire,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      title: Text(
-                        item["texte"]?.toString() ?? "",
-                        style: GoogleFonts.roboto(
-                          fontSize: 14,
-                          color: estSombre ? Colors.white70 : Colors.black87,
-                        ),
-                      ),
-                      subtitle: Text(
-                        _formaterDate(item["date"]?.toString() ?? ""),
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          color: estSombre ? Colors.white38 : Colors.black38,
-                        ),
-                      ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
         );
       },
