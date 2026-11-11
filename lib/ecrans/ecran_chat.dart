@@ -283,8 +283,8 @@ class _EcranChatState extends State<EcranChat> {
                         if (prestataires.isNotEmpty)
                           SizedBox(
                             height: prestataires.any((p) => p.imageUrl != null)
-                                ? 360
-                                : 250,
+                                ? 400
+                                : 290,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: prestataires.length,

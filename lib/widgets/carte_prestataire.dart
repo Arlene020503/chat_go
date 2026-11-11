@@ -110,6 +110,32 @@ class CartePrestataire extends StatelessWidget {
                     fontSize: 13,
                   ),
                 ),
+                if (aTelephone || aWhatsapp) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        aWhatsapp ? Icons.chat_outlined : Icons.phone_outlined,
+                        size: 15,
+                        color: const Color(0xFF00A859),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: SelectableText(
+                          aTelephone
+                              ? prestataire.telephone
+                              : "+${prestataire.whatsapp}",
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: estSombre ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 if (details.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Row(

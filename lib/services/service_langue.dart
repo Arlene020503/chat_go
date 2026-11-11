@@ -324,6 +324,27 @@ class ServiceLangue {
       es: "¡Hola! Dime qué buscas: un fontanero, un restaurante, una peluquería, una farmacia… y si quieres la ciudad.",
       zh: "你好！告诉我您在找什么：水管工、餐厅、理发店、药店……也可以说明城市。",
     },
+    "ia_merci": {
+      fr: "Avec plaisir ! N'hésitez pas si vous cherchez autre chose.",
+      en: "You're welcome! Let me know if you need anything else.",
+      de: "Gern geschehen! Sag Bescheid, wenn du noch etwas suchst.",
+      es: "¡Con gusto! Avísame si buscas otra cosa.",
+      zh: "不客气！如果还需要找别的，请告诉我。",
+    },
+    "ia_internet_sans_numero": {
+      fr: "J'ai trouvé ces adresses sur Internet et je les ai sauvegardées, mais elles n'ont pas de numéro public. Utilisez le bouton Itinéraire pour vous y rendre.",
+      en: "I found these places on the Internet and saved them, but they have no public phone number. Use the Directions button to get there.",
+      de: "Ich habe diese Orte im Internet gefunden und gespeichert, aber sie haben keine öffentliche Nummer. Nutze den Routen-Button.",
+      es: "Encontré estos lugares en Internet y los guardé, pero no tienen número público. Usa el botón Ruta para llegar.",
+      zh: "我在网上找到了这些地点并已保存，但它们没有公开电话。请使用“路线”按钮前往。",
+    },
+    "ia_internet_numeros_en_cours": {
+      fr: "Voici déjà des adresses trouvées sur Internet. Je continue de chercher leurs numéros en arrière-plan : refaites la même demande dans une minute pour les voir.",
+      en: "Here are some places found on the Internet. I'm still looking for their phone numbers in the background: ask again in a minute to see them.",
+      de: "Hier sind schon einige Orte aus dem Internet. Ich suche im Hintergrund weiter nach Nummern: frag in einer Minute noch einmal.",
+      es: "Aquí tienes lugares encontrados en Internet. Sigo buscando sus números en segundo plano: vuelve a preguntar en un minuto.",
+      zh: "这些是在网上找到的地点。我正在后台继续查找电话号码：一分钟后再问一次即可看到。",
+    },
     "ia_description_internet": {
       fr: "Résultat trouvé sur Internet (OpenStreetMap).",
       en: "Result found on the Internet (OpenStreetMap).",
